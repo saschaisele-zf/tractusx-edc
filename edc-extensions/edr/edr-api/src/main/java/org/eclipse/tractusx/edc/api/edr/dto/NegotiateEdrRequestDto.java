@@ -20,6 +20,7 @@
 package org.eclipse.tractusx.edc.api.edr.dto;
 
 import org.eclipse.edc.connector.api.management.contractnegotiation.model.ContractOfferDescription;
+import org.eclipse.edc.policy.model.Policy;
 import org.eclipse.edc.spi.types.domain.callback.CallbackAddress;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class NegotiateEdrRequestDto {
     private String providerId;
 
     private ContractOfferDescription offer;
+    private Policy policy;
     private List<CallbackAddress> callbackAddresses = new ArrayList<>();
 
     private NegotiateEdrRequestDto() {
@@ -76,6 +78,10 @@ public class NegotiateEdrRequestDto {
         return offer;
     }
 
+    public Policy getPolicy() {
+        return policy;
+    }
+
     public static final class Builder {
         private final NegotiateEdrRequestDto dto;
 
@@ -100,6 +106,11 @@ public class NegotiateEdrRequestDto {
 
         public Builder offer(ContractOfferDescription offer) {
             dto.offer = offer;
+            return this;
+        }
+
+        public Builder policy(Policy policy) {
+            dto.policy = policy;
             return this;
         }
 

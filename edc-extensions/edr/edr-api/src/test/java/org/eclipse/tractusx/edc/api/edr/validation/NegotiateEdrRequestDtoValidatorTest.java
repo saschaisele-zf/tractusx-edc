@@ -22,6 +22,7 @@ package org.eclipse.tractusx.edc.api.edr.validation;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+import org.eclipse.edc.spi.monitor.Monitor;
 import org.eclipse.edc.validator.spi.ValidationFailure;
 import org.eclipse.edc.validator.spi.Validator;
 import org.eclipse.edc.validator.spi.Violation;
@@ -40,13 +41,28 @@ import static org.eclipse.tractusx.edc.api.edr.dto.NegotiateEdrRequestDto.EDR_RE
 import static org.eclipse.tractusx.edc.api.edr.dto.NegotiateEdrRequestDto.EDR_REQUEST_DTO_OFFER;
 import static org.eclipse.tractusx.edc.api.edr.dto.NegotiateEdrRequestDto.EDR_REQUEST_DTO_PROTOCOL;
 import static org.eclipse.tractusx.edc.api.edr.dto.NegotiateEdrRequestDto.EDR_REQUEST_DTO_PROVIDER_ID;
+import static org.mockito.Mockito.mock;
 
 public class NegotiateEdrRequestDtoValidatorTest {
 
-    private final Validator<JsonObject> validator = NegotiateEdrRequestDtoValidator.instance();
+    private final Validator<JsonObject> validator = NegotiateEdrRequestDtoValidator.instance(mock(Monitor.class));
 
     @Test
-    void shouldSuccess_whenObjectIsValid() {
+    void shouldSucceed_whenObjectIsValid() {
+        var input = Json.createObjectBuilder()
+                .add(EDR_REQUEST_DTO_COUNTERPARTY_ADDRESS, value("http://connector-address"))
+                .add(EDR_REQUEST_DTO_PROTOCOL, value("protocol"))
+                .add(EDR_REQUEST_DTO_PROVIDER_ID, value("connector-id"))
+                .add(POLICY, createArrayBuilder().add(createObjectBuilder()))
+                .build();
+
+        var result = validator.validate(input);
+
+        assertThat(result).isSucceeded();
+    }
+
+    @Test
+    void shouldSucceed_whenDeprecatedOfferIsUsed() {
         var input = Json.createObjectBuilder()
                 .add(EDR_REQUEST_DTO_COUNTERPARTY_ADDRESS, value("http://connector-address"))
                 .add(EDR_REQUEST_DTO_PROTOCOL, value("protocol"))

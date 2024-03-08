@@ -19,6 +19,7 @@
 
 package org.eclipse.tractusx.edc.edr.spi.types;
 
+import org.eclipse.edc.policy.model.Policy;
 import org.eclipse.edc.spi.types.domain.callback.CallbackAddress;
 import org.eclipse.edc.spi.types.domain.offer.ContractOffer;
 
@@ -31,7 +32,9 @@ public class NegotiateEdrRequest {
     private String connectorAddress;
     private String protocol = "ids-multipart";
     private String connectorId;
+    @Deprecated(since = "0.6.1")
     private ContractOffer offer;
+    private Policy policy;
 
     private List<CallbackAddress> callbackAddresses = new ArrayList<>();
 
@@ -58,6 +61,10 @@ public class NegotiateEdrRequest {
 
     public ContractOffer getOffer() {
         return offer;
+    }
+
+    public Policy getPolicy() {
+        return policy;
     }
 
 
@@ -88,6 +95,11 @@ public class NegotiateEdrRequest {
             return this;
         }
 
+        public Builder policy(Policy policy) {
+            entity.policy = policy;
+            return this;
+        }
+
         public Builder callbackAddresses(List<CallbackAddress> callbackAddresses) {
             entity.callbackAddresses = callbackAddresses;
             return this;
@@ -96,7 +108,12 @@ public class NegotiateEdrRequest {
         public NegotiateEdrRequest build() {
             Objects.requireNonNull(entity.protocol, "protocol should not be null");
             Objects.requireNonNull(entity.connectorAddress, "connector address should not be null");
-            Objects.requireNonNull(entity.offer, "offer should not be null");
+            if (entity.offer == null) {
+                Objects.requireNonNull(entity.policy, "either policy or offer should not be null");
+            }
+            if (entity.policy == null) {
+                Objects.requireNonNull(entity.offer, "either policy or offer should not be null");
+            }
             return entity;
         }
 

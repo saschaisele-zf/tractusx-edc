@@ -19,6 +19,7 @@
 
 package org.eclipse.tractusx.edc.api.edr.transform;
 
+import org.eclipse.edc.policy.model.Policy;
 import org.eclipse.edc.spi.types.domain.offer.ContractOffer;
 import org.eclipse.edc.transform.spi.TransformerContext;
 import org.eclipse.edc.transform.spi.TypeTransformer;
@@ -41,17 +42,26 @@ public class NegotiateEdrRequestDtoToNegotiatedEdrRequestTransformer implements 
 
     @Override
     public @Nullable NegotiateEdrRequest transform(@NotNull NegotiateEdrRequestDto object, @NotNull TransformerContext context) {
-        var contractOffer = ContractOffer.Builder.newInstance()
-                .id(object.getOffer().getOfferId())
-                .assetId(object.getOffer().getAssetId())
-                .policy(object.getOffer().getPolicy())
-                .build();
+        ContractOffer contractOffer = null;
+        if (object.getOffer() != null) {
+            contractOffer = ContractOffer.Builder.newInstance()
+                    .id(object.getOffer().getOfferId())
+                    .assetId(object.getOffer().getAssetId())
+                    .policy(object.getOffer().getPolicy())
+                    .build();
+        }
+
+        Policy policy = null;
+        if (object.getPolicy() != null) {
+            policy = object.getPolicy();
+        }
 
         return NegotiateEdrRequest.Builder.newInstance()
                 .connectorId(object.getCounterPartyId())
                 .connectorAddress(object.getCounterPartyAddress())
                 .protocol(object.getProtocol())
                 .offer(contractOffer)
+                .policy(policy)
                 .callbackAddresses(object.getCallbackAddresses())
                 .build();
     }

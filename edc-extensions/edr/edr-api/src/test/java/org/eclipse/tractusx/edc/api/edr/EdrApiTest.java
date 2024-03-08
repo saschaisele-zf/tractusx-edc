@@ -42,6 +42,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.eclipse.edc.jsonld.spi.JsonLdKeywords.VALUE;
 import static org.eclipse.edc.junit.extensions.TestServiceExtensionContext.testServiceExtensionContext;
 import static org.eclipse.tractusx.edc.api.edr.schema.EdrSchema.EndpointDataReferenceEntrySchema.ENDPOINT_DATA_REFERENCE_ENTRY_EXAMPLE;
+import static org.eclipse.tractusx.edc.api.edr.schema.EdrSchema.NegotiateEdrRequestSchema.NEGOTIATE_EDR_REQUEST_DEPRECATED_EXAMPLE;
 import static org.eclipse.tractusx.edc.api.edr.schema.EdrSchema.NegotiateEdrRequestSchema.NEGOTIATE_EDR_REQUEST_EXAMPLE;
 import static org.eclipse.tractusx.edc.edr.spi.types.EndpointDataReferenceEntry.EDR_ENTRY_AGREEMENT_ID;
 import static org.eclipse.tractusx.edc.edr.spi.types.EndpointDataReferenceEntry.EDR_ENTRY_ASSET_ID;
@@ -68,10 +69,29 @@ public class EdrApiTest {
     }
 
     @Test
-    void edrRequestExample() throws JsonProcessingException {
-        var validator = NegotiateEdrRequestDtoValidator.instance();
+    void edrRequestPolicyExample() throws JsonProcessingException {
+        var validator = NegotiateEdrRequestDtoValidator.instance(testServiceExtensionContext().getMonitor());
 
         var jsonObject = objectMapper.readValue(NEGOTIATE_EDR_REQUEST_EXAMPLE, JsonObject.class);
+        assertThat(jsonObject).isNotNull();
+
+        var expanded = jsonLd.expand(jsonObject);
+        AbstractResultAssert.assertThat(expanded).isSucceeded()
+                .satisfies(exp -> AbstractResultAssert.assertThat(validator.validate(exp)).isSucceeded())
+                .extracting(e -> transformer.transform(e, NegotiateEdrRequestDto.class))
+                .satisfies(transformResult -> AbstractResultAssert.assertThat(transformResult).isSucceeded()
+                        .satisfies(transformed -> {
+                            assertThat(transformed.getPolicy()).isNotNull();
+                            assertThat(transformed.getCallbackAddresses()).asList().hasSize(1);
+                            assertThat(transformed.getProviderId()).isNotBlank();
+                        }));
+    }
+
+    @Test
+    void edrRequestDeprecatedOfferExample() throws JsonProcessingException {
+        var validator = NegotiateEdrRequestDtoValidator.instance(testServiceExtensionContext().getMonitor());
+
+        var jsonObject = objectMapper.readValue(NEGOTIATE_EDR_REQUEST_DEPRECATED_EXAMPLE, JsonObject.class);
         assertThat(jsonObject).isNotNull();
 
         var expanded = jsonLd.expand(jsonObject);

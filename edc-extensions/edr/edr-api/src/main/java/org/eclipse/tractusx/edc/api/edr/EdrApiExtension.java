@@ -68,7 +68,7 @@ public class EdrApiExtension implements ServiceExtension {
         transformerRegistry.register(new JsonObjectToNegotiateEdrRequestDtoTransformer());
         transformerRegistry.register(new JsonObjectFromEndpointDataReferenceEntryTransformer());
         transformerRegistry.register(new EndpointDataReferenceToDataAddressTransformer());
-        validatorRegistry.register(EDR_REQUEST_DTO_TYPE, NegotiateEdrRequestDtoValidator.instance());
+        validatorRegistry.register(EDR_REQUEST_DTO_TYPE, NegotiateEdrRequestDtoValidator.instance(context.getMonitor()));
         webService.registerResource(apiConfig.getContextAlias(), new EdrController(edrService, transformerRegistry, validatorRegistry, monitor));
     }
 }
